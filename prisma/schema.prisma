@@ -1,0 +1,179 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider        = "prisma-client-js"
+    previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Example {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+// Necessary for Next auth
+model Account {
+    id                String  @id @default(cuid())
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? @db.Text
+    session_state     String?
+    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([provider, providerAccountId])
+}
+
+model Session {
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+    id            String       @id @default(cuid())
+    name          String?
+    email         String?      @unique
+    emailVerified DateTime?
+    image         String?
+    discriminator String?
+    verified      Boolean
+    discordId     String
+    accounts      Account[]
+    sessions      Session[]
+    TSWAccount    TSWAccount[]
+    TG            TG[]
+}
+
+model VerificationToken {
+    identifier String
+    token      String   @unique
+    expires    DateTime
+
+    @@unique([identifier, token])
+}
+
+model TSWAccount {
+    account          String       @unique
+    verificationCode String?
+    userId           String?
+    user             User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    Characters       Characters[]
+}
+
+model Characters {
+    name      String     @id @unique
+    account   String
+    schc      String
+    status    String
+    ladder    String
+    title     String
+    private   Boolean    @default(false)
+    Items     Items[]
+    accountId TSWAccount @relation(fields: [account], references: [account], onDelete: Cascade)
+}
+
+model ItemListing {
+    id           String @id @unique @default(cuid())
+    itemId       String
+    currencyType String
+    value        Int
+    item         Items  @relation(fields: [itemId], references: [id], onDelete: Cascade)
+}
+
+model Items {
+    id String @id
+
+    characterId        String
+    column             Int?
+    row                Int?
+    image              String?
+    type               String?
+    ilvl_original      Int?
+    ilvl               Int?
+    quality            Int?
+    quality_str        String?
+    is_ethereal        Boolean?
+    is_rw              Boolean?
+    storage            Int?
+    socket_count       Int?
+    socketed_count     Int?
+    is_class_charm     Boolean?
+    is_charm           Boolean?
+    has_trophy         Boolean?
+    is_upgraded        Boolean?
+    equipment          Int?
+    is_trophy_fragment Boolean?
+    is_enhanced_rw     Boolean?
+
+    complete_description String
+
+    name_idxs          String?
+    name_complete_idxs String?
+    name_special_idxs  String?
+
+    pull_ts DateTime @db.Timestamp()
+
+    character            Characters             @relation(fields: [characterId], references: [name], onDelete: Cascade)
+    ItemListing          ItemListing[]
+    Complete_Description Complete_Description[]
+    TGTransaction        TGTransaction[]
+}
+
+model GenericRolls {
+    roll String @unique
+}
+
+model Complete_Description {
+    id              String  @id @unique @default(cuid())
+    itemId          String
+    text            String
+    color           Int
+    addLineBreak    Boolean
+    genericRollText String?
+    valuesCount     BigInt?
+    valuesOne       BigInt?
+    valuesTwo       BigInt?
+    valuesThree     BigInt?
+    valuesFour      BigInt?
+    valuesFive      BigInt?
+    item            Items   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+}
+
+model Search {
+    id     String @id @default(uuid())
+    params Json
+}
+
+model TG {
+    id                  String          @unique
+    value               Int
+    user                User            @relation(fields: [id], references: [id], onDelete: Cascade)
+    senderTransaction   TGTransaction[] @relation("sender")
+    receiverTransaction TGTransaction[] @relation("receiver")
+}
+
+model TGTransaction {
+    id         String  @id @unique @default(cuid())
+    senderId   String
+    receiverId String
+    value      Int
+    itemsId    String?
+    item       Items?  @relation(fields: [itemsId], references: [id])
+    sender     TG      @relation("sender", fields: [senderId], references: [id])
+    receiver   TG      @relation("receiver", fields: [receiverId], references: [id])
+}

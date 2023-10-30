@@ -1,0 +1,28 @@
+{
+  "name": "trade-center-db-insert",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "ts-node-dev --require dotenv/config --respawn src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/pg": "^8.6.5",
+    "@types/xml2js": "^0.4.11",
+    "prisma": "^5.5.2",
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.5.2",
+    "dotenv": "^16.0.3",
+    "pg": "^8.8.0",
+    "uuid": "^9.0.0",
+    "xml2js": "^0.6.0"
+  }
+}

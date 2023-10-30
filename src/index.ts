@@ -250,29 +250,6 @@ const processItems = async (items: Root[]) => {
                         )
                         .filter((entry) => entry == -1)
                         .join(','),
-
-                    // name_complete_text: item.name[0].text,
-                    // name_complete_color: item.name[0].color,
-                    // name_complete_addLineBreak: item.name[0].addLineBreak,
-                    // name_primary_text: item.name_complete.reduce<string[]>(
-                    //     (acc, desc) => {
-                    //         acc[acc.length - 1] += desc.text;
-
-                    //         if (desc.addLineBreak) {
-                    //             acc.push('');
-                    //         }
-
-                    //         return acc;
-                    //     },
-                    //     ['']
-                    // )[0],
-                    // name_primary_color: item.name_complete[0].color,
-                    // name_primary_addLineBreak:
-                    //     item.name_complete[0].addLineBreak,
-                    // name_secondary_text: item.name_complete[0].text,
-                    // name_secondary_color: item.name_complete[0].color,
-                    // name_secondary_addLineBreak:
-                    //     item.name_complete[0].addLineBreak,
                 };
             }),
             skipDuplicates: true,

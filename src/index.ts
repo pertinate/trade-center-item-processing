@@ -48,17 +48,6 @@ const processItems = async (items: Root[]) => {
                 .map((item) => {
                     return {
                         ...item,
-                        completeDescription: /(hp[0-9])/.test(item.type)
-                            ? item.completeDescription.map((entry) => ({
-                                  ...entry,
-                                  text: entry.text.replace('15 000', '15000'),
-                              }))
-                            : item.completeDescription,
-                    };
-                })
-                .map((item) => {
-                    return {
-                        ...item,
                         name: item.name.map((entry) => ({
                             text: entry.text,
                             color: Number(entry.color),
@@ -74,7 +63,12 @@ const processItems = async (items: Root[]) => {
                             color: Number(entry.color),
                             addLineBreak: (entry.addLineBreak as any) == 'true',
                         })),
-                        completeDescription: item.completeDescription.map(
+                        completeDescription: (/(hp[0-9])/.test(item.type)
+                            ? item.completeDescription.map((entry) => ({
+                                  ...entry,
+                                  text: entry.text.replace('15 000', '15000'),
+                              }))
+                            : item.completeDescription).map(
                             (roll) => {
                                 try {
                                     const rollMatch =
@@ -107,7 +101,7 @@ const processItems = async (items: Root[]) => {
                             }
                         ),
                     };
-                }),
+                })
         };
     });
 
@@ -192,16 +186,19 @@ const processItems = async (items: Root[]) => {
         });
         data += char.item.length;
 
+        //need to check if items already exist, if so then update
+
         await prisma.items.createMany({
             data: char.item.map((item) => {
                 const location = getItemLocation(item.storage);
+                
                 return {
                     id: `${char.info.account}.${char.info.name}.${
                         item.storage || -1
                     }.${
                         location == 'Equipment'
-                            ? `.e.${item.equipment || -1}`
-                            : `.i.${item.column}.${item.row}`
+                            ? `e.${item.equipment || -1}`
+                            : `i.${item.column}.${item.row}`
                     }`,
                     characterId: character.name,
                     image: item.image,
@@ -232,7 +229,6 @@ const processItems = async (items: Root[]) => {
                                 (desc) => desc.text == entry.text
                             )
                         )
-                        .filter((entry) => entry == -1)
                         .join(','),
                     name_complete_idxs: item.name_complete
                         .map((entry) =>
@@ -240,7 +236,6 @@ const processItems = async (items: Root[]) => {
                                 (desc) => desc.text == entry.text
                             )
                         )
-                        .filter((entry) => entry == -1)
                         .join(','),
                     name_special_idxs: item?.name_special
                         ?.map((entry) =>
@@ -248,7 +243,6 @@ const processItems = async (items: Root[]) => {
                                 (desc) => desc.text == entry.text
                             )
                         )
-                        .filter((entry) => entry == -1)
                         .join(','),
                 };
             }),
@@ -261,16 +255,17 @@ const processItems = async (items: Root[]) => {
                     .map((item) =>
                         item.completeDescription.map((desc) => {
                             const location = getItemLocation(item.storage);
-                            // console.log('>>>', desc);
+                            
                             return {
                                 itemId: `${char.info.account}.${
                                     char.info.name
                                 }.${item.storage || -1}.${
                                     location == 'Equipment'
-                                        ? `.e.${item.equipment || -1}`
-                                        : `.i.${item.column}.${item.row}`
+                                        ? `e.${item.equipment || -1}`
+                                        : `i.${item.column}.${item.row}`
                                 }`,
                                 ...desc,
+                                text: desc.text.toString(),
                                 values: undefined,
                                 ...(desc.values || []).reduce<
                                     Record<string, number>
